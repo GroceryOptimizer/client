@@ -26,7 +26,12 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/lib/*": [""],
+      "@/services/*": ["./src/services/*"],
+      "@/types": ["./src/types/index.ts"]
     }
   },
   "include": [

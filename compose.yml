@@ -1,0 +1,23 @@
+services:
+  client:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+      - 9229:9229
+    volumes:
+      - ./app:/app
+      - ./src/node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+
+  mock:
+    build:
+      context: ./mock
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    volumes:
+      - ./mock:/api
+
