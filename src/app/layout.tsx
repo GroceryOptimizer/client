@@ -1,7 +1,9 @@
-import '~/styles/globals.css';
-
-import { GeistSans } from 'geist/font/sans';
 import { type Metadata } from 'next';
+import { Inter, Poppins } from 'next/font/google';
+import Providers from '../providers/providers';
+
+import '~/styles/globals.css';
+import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: 'Create T3 App',
@@ -9,10 +11,26 @@ export const metadata: Metadata = {
   icons: [{ rel: 'icon', url: '/favicon.ico' }],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+const poppins = Poppins({
+  subsets: ['latin'],
+  variable: '--font-poppins',
+  weight: ['400', '500', '600', '700'],
+});
+
+type Props = {
+  children: ReactNode;
+};
+
+export default function RootLayout({ children }: Readonly<Props>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${poppins.variable} ${inter.variable}`}>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
+import TopNavbar from '~/components/navbar/TopNavbar';
 
 type Props = {
   children: ReactNode;
@@ -6,9 +7,9 @@ type Props = {
 
 export default function MainLayout({ children }: Props): ReactElement {
   return (
-    <div>
-      <h1>Hello World</h1>
-      <p>This is a test</p>
+    <div className="min-h-screen bg-gray-100">
+      <TopNavbar />
+      <div>{children}</div>
     </div>
   );
 }
