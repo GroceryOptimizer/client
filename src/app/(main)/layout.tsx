@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import TopNavbar from '~/components/navbar/TopNavbar';
+import TopNavbar from '~components/ui/navbar/TopNavbar';
 
 type Props = {
   children: ReactNode;

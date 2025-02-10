@@ -26,12 +26,12 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/lib/*": [""],
-      "@/services/*": ["./src/services/*"],
-      "~models": ["src/models/index.ts"]
+      "~components/*": ["./src/components/*"],
+      "~hooks/*": ["./src/hooks/*"],
+      "~lib/*": [""],
+      "~models": ["src/models/index.ts"],
+      "~services/*": ["./src/services/*"],
+      "~/*": ["./src/*"]
     }
   },
   "include": [

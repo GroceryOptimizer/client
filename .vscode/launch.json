@@ -6,7 +6,7 @@
   "configurations": [
     {
       "command": "npm run dev",
-      "name": "Run npm start",
+      "name": "Run dev",
       "request": "launch",
       "type": "node-terminal"
     }

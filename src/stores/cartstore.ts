@@ -26,7 +26,6 @@ const useCartStore = create<CartStore>()(
 
     },
 
-
     remove: (prod) => {
       set((state) => ({
         cart: state.cart.filter((x) => x.product.id !== prod.id)
@@ -35,7 +34,6 @@ const useCartStore = create<CartStore>()(
     },
 
     clear: () => set({ cart: [] }),
-
   }),
     {
       name: 'cart-storage',
@@ -43,5 +41,4 @@ const useCartStore = create<CartStore>()(
     })
 );
 
-
-export default useCartStore;
+export { useCartStore };
