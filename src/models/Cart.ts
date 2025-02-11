@@ -1,6 +1,6 @@
 import type { Product } from "./Product"
 
-export type CartItem = {
+export interface CartItem {
   product: Product
   quantity: number
 }

@@ -1,5 +1,4 @@
-
-export type Coordinates = {
+export interface Coordinates {
   latitude: number;
   longitude: number;
 };

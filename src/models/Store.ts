@@ -1,6 +1,6 @@
 import { Coordinates } from "./Coordinates";
 
-export type Store = {
+export interface Store {
   id: string;
   name: string;
   location: Coordinates;
