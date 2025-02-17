@@ -26,6 +26,7 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
+      "~config": ["./src/config/index.ts"],
       "~components/*": ["./src/components/*"],
       "~hooks/*": ["./src/hooks/*"],
       "~lib/*": [""],

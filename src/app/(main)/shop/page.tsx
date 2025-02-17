@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
-import { Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
 import ProductGrid from '~/components/layout/ProductGrid';
 import { ProductCard, ProductCardBody, ProductCardFooter, ProductCardHeader } from '~components/ui/products';
 import { useCartStore } from '~/stores';

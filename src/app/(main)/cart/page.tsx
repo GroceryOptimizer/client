@@ -7,7 +7,7 @@ type Props = {
 
 }
 
-export default function CartPage({}: Props): ReactElement {
+export default function CartPage({ }: Props): ReactElement {
     const cart = useCartStore((state) => state.cart);
     return (
         <div>
