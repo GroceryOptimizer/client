@@ -3,24 +3,61 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import MapComponent from "../../../components/ui/MapComponent/MapComponent";
+import axios from 'axios';
+import { Coordinates, CoordinatesDTO, Product, ProductDTO, StockItem, StockItemDTO, Store, StoreInventory, VendorDTO, VendorVisitDTO } from '~/models/v1'
+import { useResultStore } from '~/stores/optimizeStore';
 
-async function sendCart(cart: { cart: { name: string; }[] }) {
-    const res = await fetch('http://localhost:7049/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cart),
-    });
+function mapCoordinates(coordinatesDTO: CoordinatesDTO): Coordinates {
+    return {
+        latitude: coordinatesDTO.latitude,
+        longitude: coordinatesDTO.longitude,
+    };
+}
 
-    if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to send cart: ${res.status} - ${errorText || 'No details'}`);
+function mapProduct(productDTO: ProductDTO): Product {
+    return {
+        name: productDTO.name,
+    };
+}
+
+function mapStockItem(stockItemDTO: StockItemDTO): StockItem {
+    return {
+        product: mapProduct(stockItemDTO.product),
+        price: stockItemDTO.price,
+    };
+}
+
+function mapStore(vendorDTO: VendorDTO): Store {
+    return {
+        id: vendorDTO.id,
+        name: vendorDTO.name,
+        location: mapCoordinates(vendorDTO.location),
+    };
+}
+
+function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
+    return {
+        store: mapStore(vendorVisitDTO.vendor),
+        inventory: vendorVisitDTO.stockItems.map(mapStockItem),
+    };
+}
+
+async function sendCart(cart: { cart: Product[] }) {
+    try {
+        const res = await axios.post('http://localhost:7049/api/cart', cart, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Error sending cart:', error);
+        throw new Error(`Failed to send cart: ${error.response?.status} - ${error.message}`);
     }
-
-    return await res.json();
 }
 
 export default function V1ShopPage({ children }: { children: ReactNode }) {
-    const [cart, setCart] = useState<string[]>([]);
+
+    const [cart, setCart] = useState<Product[]>([]);
+    const { add } = useResultStore();
     const qClient = useQueryClient();
     const [buttonPressed, setButtonPressed] = useState(false);
 
@@ -31,27 +68,37 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     });
 
     const handleAddToCart = () => {
-        const product = document.getElementById('input-product-name') as HTMLInputElement;
-        if (!product) return;
+        const productInput = document.getElementById('input-product-name') as HTMLInputElement;
+        if (!productInput) return;
 
-        setCart([...cart, product.value]);
-        product.value = '';
+        const newProduct: Product = { name: productInput.value };
+        setCart([...cart, newProduct]);
+        productInput.value = '';
     };
+
+    const handleSubmitCart = async () => {
+        const shoppingCart = { cart };
+
+        try {
+            const vendorVisits = await sendCart(shoppingCart);
+
+            const storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
+
+            storeInventories.forEach(add);
+
+        } catch (error) {
+            console.error('Error submitting cart:', error);
+        }
+
+        setCart([]);
+    };
+
+
 
     const handleRemoveFromCart = (index: number) => {
         setCart(cart.filter((_, i) => i !== index));
     };
 
-    const handleSubmitCart = () => {
-
-        const shoppingCart = { cart: cart.map((product) => ({ name: product })), };
-        // console.log("cart", cart);
-        console.log("shoppingCart", shoppingCart);
-        setButtonPressed(true);
-        console.log(buttonPressed)
-        mutate(shoppingCart);
-        setCart([]);
-    };
 
     useEffect(() => {
         console.log(cart);
@@ -83,7 +130,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                         key={i}
                         className="flex flex-row justify-between items-center p-4 border-b border-gray-200 hover:bg-gray-50 gap-8"
                     >
-                        <div className="text-center">{p}</div>
+                        <div className="text-center">{p.name}</div>
                         <button
                             className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-60"
                             onClick={() => handleRemoveFromCart(i)}
