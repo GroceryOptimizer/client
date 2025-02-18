@@ -1,9 +1,6 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { map } from 'leaflet';
-
 import axios from 'axios';
 import { Coordinates, CoordinatesDTO, Product, ProductDTO, StockItem, StockItemDTO, Store, StoreInventory, VendorDTO, VendorVisitDTO } from '~/models/v1'
 import { useResultStore } from '~/stores/optimizeStore';
@@ -58,13 +55,12 @@ async function sendCart(cart: { cart: Product[] }) {
 export default function V1ShopPage({ children }: { children: ReactNode }) {
 
     const [cart, setCart] = useState<Product[]>([]);
-    const { add } = useResultStore(); // Access the add function from Zustand store
-
+    const { add } = useResultStore();
     const handleAddToCart = () => {
         const productInput = document.getElementById('input-product-name') as HTMLInputElement;
         if (!productInput) return;
 
-        const newProduct: Product = { name: productInput.value }; // Create a Product object
+        const newProduct: Product = { name: productInput.value };
         setCart([...cart, newProduct]);
         productInput.value = '';
     };
