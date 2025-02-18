@@ -57,6 +57,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<Product[]>([]);
     const { add: addResult, clear: clearResults } = useResultStore();
     const [buttonPressed, setButtonPressed] = useState(false);
+    const [storeInventories, setStoreInventories] = useState<StoreInventory[]>([]);
 
 
     const handleAddToCart = () => {
@@ -75,6 +76,8 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
 
         clearResults();
         storeInventories.forEach(addResult);
+        setStoreInventories(storeInventories);
+        setButtonPressed(true);
         setCart([]);
     };
 
@@ -119,7 +122,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                 ))}
             </div>
             <div className='leaflet-container'>
-                {buttonPressed && <MapComponent />}
+                {buttonPressed && <MapComponent vendorVisits={storeInventories} />}
             </div>
         </div>
     );
