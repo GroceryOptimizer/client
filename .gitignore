@@ -62,3 +62,11 @@ Thumbs.db
 
 # Vs Code
 *.code-workspace
+
+# Weird stuff - Stuff that popped up as soon as the project was loaded elsewhere
+ProjectSettings.json
+DocumentLayout.json
+VSWorkSpaceState.json
+slnx.sqlite
+*.vsidx
+*.wsuo
