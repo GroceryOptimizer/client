@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { map } from 'leaflet';
+import MapComponent from "../../../components/ui/MapComponent/MapComponent";
 
 async function sendCart(cart: { cart: { name: string; }[] }) {
     const res = await fetch('http://localhost:7049/api/cart', {
@@ -22,6 +22,7 @@ async function sendCart(cart: { cart: { name: string; }[] }) {
 export default function V1ShopPage({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<string[]>([]);
     const qClient = useQueryClient();
+    const [buttonPressed, setButtonPressed] = useState(false);
 
     const { mutate } = useMutation({
         mutationFn: sendCart,
@@ -46,7 +47,8 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
         const shoppingCart = { cart: cart.map((product) => ({ name: product })), };
         // console.log("cart", cart);
         console.log("shoppingCart", shoppingCart);
-
+        setButtonPressed(true);
+        console.log(buttonPressed)
         mutate(shoppingCart);
         setCart([]);
     };
@@ -90,6 +92,9 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                         </button>
                     </div>
                 ))}
+            </div>
+            <div className='leaflet-container'>
+                {buttonPressed && <MapComponent />}
             </div>
         </div>
     );
