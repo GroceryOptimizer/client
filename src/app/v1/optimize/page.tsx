@@ -13,6 +13,10 @@ const useStoresStock = () => useQuery({
 export default function V1OptimizePage() {
     const { data: storesStock, isLoading, error } = useStoresStock();
 
+    console.log("storesStock", storesStock)
+    console.log("isLoading", isLoading)
+    console.log("error", error)
+
     if (isLoading) {
         return <p>Loading...</p>;
     }
