@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import MapComponent from "../../../components/ui/MapComponent/MapComponent";
 import axios from 'axios';
 import { Coordinates, CoordinatesDTO, Product, ProductDTO, StockItem, StockItemDTO, Store, StoreInventory, VendorDTO, VendorVisitDTO } from '~/models/v1'
@@ -55,17 +54,10 @@ async function sendCart(cart: { cart: Product[] }) {
 }
 
 export default function V1ShopPage({ children }: { children: ReactNode }) {
-
     const [cart, setCart] = useState<Product[]>([]);
-    const { add } = useResultStore();
-    const qClient = useQueryClient();
+    const { add: addResult, clear: clearResults } = useResultStore();
     const [buttonPressed, setButtonPressed] = useState(false);
 
-    const { mutate } = useMutation({
-        mutationFn: sendCart,
-        onSuccess: (data) => qClient.setQueryData(['cart'], data),
-        onError: (error) => console.error('Error sending cart:', error),
-    });
 
     const handleAddToCart = () => {
         const productInput = document.getElementById('input-product-name') as HTMLInputElement;
@@ -78,31 +70,17 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
 
     const handleSubmitCart = async () => {
         const shoppingCart = { cart };
+        const vendorVisits = await sendCart(shoppingCart);
+        const storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
 
-        try {
-            const vendorVisits = await sendCart(shoppingCart);
-
-            const storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
-
-            storeInventories.forEach(add);
-
-        } catch (error) {
-            console.error('Error submitting cart:', error);
-        }
-
+        clearResults();
+        storeInventories.forEach(addResult);
         setCart([]);
     };
-
-
 
     const handleRemoveFromCart = (index: number) => {
         setCart(cart.filter((_, i) => i !== index));
     };
-
-
-    useEffect(() => {
-        console.log(cart);
-    }, [cart]);
 
     return (
         <div className="flex flex-col gap-8 items-center justify-center h-screen">
