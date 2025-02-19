@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { StoreInventory } from '~/models/v1';
-import markerIcon from "~/assets/marker-icon.png";
-import markerShadow from "~/assets/marker-shadow.png";
 
 interface MapProps {
     vendorVisits: StoreInventory[];
@@ -26,8 +24,8 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits }) => {
         }).addTo(map);
 
         const customIcon = L.icon({
-            iconUrl: "leaflet/dist/images/marker-icon.png",
-            shadowUrl: "leaflet/dist/images/marker-shadow.png",
+            iconUrl: '/marker-icon.png',
+            shadowUrl: '/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
@@ -39,7 +37,7 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits }) => {
                 .map((item) => `${item.product.name}: ${item.price} SEK`)
                 .join("<br>");
 
-            L.marker([location.latitude, location.longitude])
+            L.marker([location.latitude, location.longitude], { icon: customIcon })
                 .addTo(map)
                 .bindPopup(`<b>${name}</b><br> ${productList}`);
         });
