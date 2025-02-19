@@ -31,6 +31,18 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits }) => {
             popupAnchor: [1, -34]
         });
 
+        const userIcon = L.icon({
+            iconUrl: '/green-icon.png',
+            shadowUrl: '/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        })
+
+        L.marker(map.getCenter(), { icon: userIcon })
+            .addTo(map)
+            .bindPopup("Your location");
+
         vendorVisits.forEach((visit) => {
             const { name, location } = visit.store;
             const productList = visit.inventory
