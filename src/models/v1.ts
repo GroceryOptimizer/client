@@ -52,7 +52,7 @@ export interface VendorDTO {
 }
 
 export interface VendorVisitDTO {
-  vendorId: number;
-  vendor: VendorDTO;
+  storeId: number;
+  store: VendorDTO;
   stockItems: StockItemDTO[];
 }

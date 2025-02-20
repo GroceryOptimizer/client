@@ -37,7 +37,7 @@ function mapStore(vendorDTO: VendorDTO): Store {
 
 function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
     return {
-        store: mapStore(vendorVisitDTO.vendor),
+        store: mapStore(vendorVisitDTO.store),
         inventory: vendorVisitDTO.stockItems.map(mapStockItem),
     };
 }
@@ -157,7 +157,10 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const handleSubmitCart = async () => {
         const shoppingCart = { cart };
         const vendorVisits = await sendCart(shoppingCart);
+        console.log("📡 API Response:", vendorVisits); // Log raw API response
         let storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
+        console.log("✅ Mapped Store Inventories:", storeInventories); //Check if mapping breaks here
+
 
         storeInventories = filterVendors(storeInventories)
         const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance)
@@ -213,7 +216,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                 {buttonPressed && <MapComponent vendorVisits={storeInventories} userLocation={userLocation} />}
             </div>
             <div className="shoppingRouteDiv">
-                {buttonPressed && <ShoppingRouteComponent route={storeInventories} /> }
+                {buttonPressed && <ShoppingRouteComponent route={storeInventories} />}
             </div>
         </div>
     );
