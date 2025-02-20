@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import MapComponent from "../../../components/ui/MapComponent/MapComponent";
+import ShoppingRouteComponent from "../../../components/ui/ShoppingRouteComponent/ShoppingRouteComponent";
 import axios from 'axios';
 import { Coordinates, CoordinatesDTO, Product, ProductDTO, StockItem, StockItemDTO, Store, StoreInventory, VendorDTO, VendorVisitDTO } from '~/models/v1'
 import { useResultStore } from '~/stores/optimizeStore';
@@ -41,6 +42,89 @@ function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
     };
 }
 
+function filterVendors(vendors: StoreInventory[]): StoreInventory[] {
+    // Step 1: Track the cheapest vendor for each product
+    let productMap = new Map<string, { price: number; vendorId: number }>();
+
+    vendors.forEach((vendor) => {
+        vendor.inventory.forEach((item) => {
+            const existing = productMap.get(item.product.name);
+            if (!existing || item.price < existing.price) {
+                productMap.set(item.product.name, { price: item.price, vendorId: vendor.store.id });
+            }
+        });
+    });
+
+    // Step 2: Determine which vendors are still needed
+    let validVendors = new Map<number, StoreInventory>();
+
+    vendors.forEach((vendor) => {
+        let isNeeded = vendor.inventory.some(item => productMap.get(item.product.name)?.vendorId === vendor.store.id);
+        if (isNeeded) {
+            validVendors.set(vendor.store.id, vendor);
+        }
+    });
+
+    return Array.from(validVendors.values());
+}
+
+// Step 1 for brute-force'ing the optimal route
+function getAllPermutations<T>(arr: T[]): T[][] {
+    if (arr.length <= 1) return [arr];
+
+    let permutations: T[][] = [];
+    arr.forEach((item, index) => {
+        let remaining = arr.slice(0, index).concat(arr.slice(index + 1));
+        let subPermutations = getAllPermutations(remaining);
+        subPermutations.forEach((perm) => permutations.push([item, ...perm]));
+    });
+
+    return permutations;
+}
+
+function findOptimalRoute(
+    start: Coordinates,
+    vendors: StoreInventory[],
+    getDistance: (a: Coordinates, b: Coordinates) => number
+): StoreInventory[] {
+
+    const allRoutes = getAllPermutations(vendors);
+    let bestRoute: StoreInventory[] = [];
+    let bestDistance = Infinity;
+
+    // Step 2 for brute-force'ing the optimal route
+    allRoutes.forEach((route) => {
+        let totalDistance = calculateTotalDistance(start, route, getDistance);
+        if (totalDistance < bestDistance) {
+            bestDistance = totalDistance;
+            bestRoute = route;
+        }
+    });
+
+    return bestRoute;
+}
+
+function calculateTotalDistance(
+    start: Coordinates,
+    route: StoreInventory[],
+    getDistance: (a: Coordinates, b: Coordinates) => number
+): number {
+    let totalDistance = 0;
+    let prevLocation = start;
+
+    route.forEach((store) => {
+        totalDistance += getDistance(prevLocation, store.store.location);
+        prevLocation = store.store.location;
+    });
+
+    return totalDistance;
+}
+
+// Placeholder distance function (straight-line distance)
+function getDistance(a: Coordinates, b: Coordinates): number {
+    return Math.sqrt(Math.pow(a.latitude - b.latitude, 2) + Math.pow(a.longitude - b.longitude, 2));
+}
+
 async function sendCart(cart: { cart: Product[] }) {
     try {
         const res = await axios.post('http://localhost:7049/api/cart', cart, {
@@ -58,6 +142,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const { add: addResult, clear: clearResults } = useResultStore();
     const [buttonPressed, setButtonPressed] = useState(false);
     const [storeInventories, setStoreInventories] = useState<StoreInventory[]>([]);
+    const [userLocation] = useState<Coordinates>({ latitude: 65.58306895412348, longitude: 22.158208878223377 });
 
 
     const handleAddToCart = () => {
@@ -72,11 +157,14 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const handleSubmitCart = async () => {
         const shoppingCart = { cart };
         const vendorVisits = await sendCart(shoppingCart);
-        const storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
+        let storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
+
+        storeInventories = filterVendors(storeInventories)
+        const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance)
 
         clearResults();
         storeInventories.forEach(addResult);
-        setStoreInventories(storeInventories);
+        setStoreInventories(optimalRoute);
         setButtonPressed(true);
         setCart([]);
     };
@@ -121,8 +209,11 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                     </div>
                 ))}
             </div>
-            <div className='leaflet-container'>
-                {buttonPressed && <MapComponent vendorVisits={storeInventories} />}
+            <div className='leaflet-container bg-white-500'>
+                {buttonPressed && <MapComponent vendorVisits={storeInventories} userLocation={userLocation} />}
+            </div>
+            <div className="shoppingRouteDiv">
+                {buttonPressed && <ShoppingRouteComponent route={storeInventories} /> }
             </div>
         </div>
     );

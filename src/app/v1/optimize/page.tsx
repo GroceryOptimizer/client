@@ -11,7 +11,7 @@ export default function V1OptimizePage() {
 
     return (
         <div>
-            <h1>Optimized Page</h1>
+            <h1>Shopping route</h1>
             {/* Add your optimized content here */}
         </div>
     );

@@ -1,20 +1,22 @@
 import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { StoreInventory } from '~/models/v1';
+import { StoreInventory, Coordinates } from '~/models/v1';
 
 interface MapProps {
     vendorVisits: StoreInventory[];
+    userLocation: Coordinates;
 }
 
-const MapComponent: React.FC<MapProps> = ({ vendorVisits }) => {
+const MapComponent: React.FC<MapProps> = ({ vendorVisits, userLocation }) => {
+
     useEffect(() => {
         // Ensure the map is only initialized once
         if (!document.getElementById("map")) return;
 
         // Create the map
         const map = L.map("map", {
-            center: [65.58306895412348, 22.158208878223377],
+            center: [userLocation.latitude, userLocation.longitude],
             zoom: 16,
         });
 
@@ -39,12 +41,15 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits }) => {
             popupAnchor: [1, -34]
         })
 
-        L.marker(map.getCenter(), { icon: userIcon })
+        const userMarker = L.marker([userLocation.latitude, userLocation.longitude], { icon: userIcon })
             .addTo(map)
             .bindPopup("Your location");
 
+        const storeLocations: L.LatLngTuple[] = [[userLocation.latitude, userLocation.longitude]];
+
         vendorVisits.forEach((visit) => {
             const { name, location } = visit.store;
+            storeLocations.push([location.latitude, location.longitude] as L.LatLngTuple);
             const productList = visit.inventory
                 .map((item) => `${item.product.name}: ${item.price} SEK`)
                 .join("<br>");
@@ -54,11 +59,21 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits }) => {
                 .bindPopup(`<b>${name}</b><br> ${productList}`);
         });
 
+        if (storeLocations.length > 1) {
+            const routePolyline = L.polyline(storeLocations, {
+                color: "blue",
+                weight: 4,
+                opacity: 0.7
+            }).addTo(map);
+
+            map.fitBounds(routePolyline.getBounds());
+        }
+
         return () => {
             // Cleanup function to remove map instance on component unmount
             map.remove();
         };
-    }, []);
+    }, [vendorVisits, userLocation]);
 
     return (
         <div
