@@ -133,7 +133,11 @@ async function sendCart(cart: { cart: Product[] }) {
         return res.data;
     } catch (error: any) {
         console.error('Error sending cart:', error);
-        throw new Error(`Failed to send cart: ${error.response?.status} - ${error.message}`);
+        if (error.response?.status === 400) {
+            throw new Error("Some products were not found at any vendor.");
+        } else {
+            throw new Error(`Failed to send cart: ${error.response?.status} - ${error.message}`);
+        }
     }
 }
 
@@ -143,6 +147,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const [buttonPressed, setButtonPressed] = useState(false);
     const [storeInventories, setStoreInventories] = useState<StoreInventory[]>([]);
     const [userLocation] = useState<Coordinates>({ latitude: 65.58306895412348, longitude: 22.158208878223377 });
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 
     const handleAddToCart = () => {
@@ -155,21 +160,28 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     };
 
     const handleSubmitCart = async () => {
+        setErrorMessage(null);
         const shoppingCart = { cart };
-        const vendorVisits = await sendCart(shoppingCart);
-        console.log("📡 API Response:", vendorVisits); // Log raw API response
-        let storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
-        console.log("✅ Mapped Store Inventories:", storeInventories); //Check if mapping breaks here
+        try {
+            const vendorVisits = await sendCart(shoppingCart);
+            console.log("📡 API Response:", vendorVisits); // Log raw API response
+            let storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
+            console.log("✅ Mapped Store Inventories:", storeInventories); //Check if mapping breaks here
 
 
-        storeInventories = filterVendors(storeInventories)
-        const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance)
+            storeInventories = filterVendors(storeInventories)
+            const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance)
 
-        clearResults();
-        storeInventories.forEach(addResult);
-        setStoreInventories(optimalRoute);
-        setButtonPressed(true);
-        setCart([]);
+            clearResults();
+            storeInventories.forEach(addResult);
+            setStoreInventories(optimalRoute);
+            setButtonPressed(true);
+            setCart([]);
+        } catch (error: any) {
+            console.error("Error: ", error);
+            setErrorMessage(error.message);
+            setTimeout(() => setErrorMessage(null), 5000);
+        }
     };
 
     const handleRemoveFromCart = (index: number) => {
@@ -196,6 +208,11 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                     </button>
                 </div>
             </div>
+            {errorMessage && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md mt-4">
+                    {errorMessage}
+                </div>
+            )}
             <div className="">
                 {cart.map((p, i) => (
                     <div
