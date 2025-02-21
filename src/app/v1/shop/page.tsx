@@ -43,29 +43,36 @@ function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
 }
 
 function filterVendors(vendors: StoreInventory[]): StoreInventory[] {
-    // Step 1: Track the cheapest vendor for each product
-    let productMap = new Map<string, { price: number; vendorId: number }>();
+    let productMap = new Map<string, { price: number; storeId: number }>();
+    let storeUsage = new Map<number, boolean>(); // Track which stores are actually used
 
+    // 🟢 Step 1: Find the cheapest price for each product
     vendors.forEach((vendor) => {
         vendor.inventory.forEach((item) => {
             const existing = productMap.get(item.product.name);
             if (!existing || item.price < existing.price) {
-                productMap.set(item.product.name, { price: item.price, vendorId: vendor.store.id });
+                productMap.set(item.product.name, { price: item.price, storeId: vendor.store.id });
             }
         });
     });
 
-    // Step 2: Determine which vendors are still needed
-    let validVendors = new Map<number, StoreInventory>();
+    // 🟢 Step 2: Assign each product to its cheapest vendor
+    let updatedVendors = vendors.map((vendor) => {
+        let filteredInventory = vendor.inventory.filter((item) => {
+            return productMap.get(item.product.name)?.storeId === vendor.store.id;
+        });
 
-    vendors.forEach((vendor) => {
-        let isNeeded = vendor.inventory.some(item => productMap.get(item.product.name)?.vendorId === vendor.store.id);
-        if (isNeeded) {
-            validVendors.set(vendor.store.id, vendor);
+        if (filteredInventory.length > 0) {
+            storeUsage.set(vendor.store.id, true); // Mark store as needed
         }
+
+        return { ...vendor, inventory: filteredInventory };
     });
 
-    return Array.from(validVendors.values());
+    // 🟢 Step 3: Remove unnecessary stores (stores with no needed products)
+    updatedVendors = updatedVendors.filter((vendor) => storeUsage.get(vendor.store.id) === true);
+
+    return updatedVendors;
 }
 
 // Step 1 for brute-force'ing the optimal route
@@ -193,7 +200,11 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
             <div className="bg-slate-100 rounded-lg shadow-md p-8">
                 <h3 className='text-xl mb-4'>V1 Shop</h3>
                 <div className="flex flex-row gap-4">
-                    <input id="input-product-name" className='px-2 border-1 border-gray-300 focus:outline-none focus:border-blue-500' type="text" placeholder="Product Name..."></input>
+                    <input id="input-product-name"
+                        className='px-2 border-1 border-gray-300 focus:outline-none focus:border-blue-500'
+                        type="text"
+                        placeholder="Product Name..."
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddToCart()} />
                     <button
                         className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                         onClick={() => handleAddToCart()}
