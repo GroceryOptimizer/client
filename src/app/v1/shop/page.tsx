@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import MapComponent from "../../../components/ui/MapComponent/MapComponent";
 import ShoppingRouteComponent from "../../../components/ui/ShoppingRouteComponent/ShoppingRouteComponent";
+import RouteChoiceRadio from '~components/ui/RouteChoiceRadio/RouteChoiceRadio';
 import axios from 'axios';
 import { Coordinates, CoordinatesDTO, Product, ProductDTO, StockItem, StockItemDTO, Store, StoreInventory, VendorDTO, VendorVisitDTO } from '~/models/v1'
 import { useResultStore } from '~/stores/optimizeStore';
@@ -42,11 +43,81 @@ function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
     };
 }
 
-function filterVendors(vendors: StoreInventory[]): StoreInventory[] {
+//############################################ BY HYBRID SOLUTION ##########################################
+function filterStoresByHybrid(vendors: StoreInventory[], userLocation: Coordinates): StoreInventory[] {
+    const costWeight = 0.00002;  // Adjust this for more price priority (0.0 = no cost consideration)
+    const distanceWeight = 0.99998;  // Adjust this for more distance priority (1.0 = full distance-based)
+
+    // 1: Calculate weighted score, balance between cost & distance
+    let weightedVendors = vendors.map((vendor) => {
+        const distance = getDistance(userLocation, vendor.store.location);
+        const totalCost = vendor.inventory.reduce((sum, item) => sum + item.price, 0);
+
+        // Formula: Weighted combination of cost and distance
+        const hybridScore = (totalCost * costWeight) + (distance * distanceWeight);
+
+        return { ...vendor, hybridScore };
+    });
+
+    // 2: Sort vendors based on their weighted hybrid score
+    weightedVendors.sort((a, b) => a.hybridScore - b.hybridScore);
+
+    // 3: Remove unnecessary stores after sorting
+    let selectedProducts = new Set<string>();
+    let optimizedVendors: StoreInventory[] = [];
+
+    for (let vendor of weightedVendors) {
+        let filteredInventory = vendor.inventory.filter((item) => {
+            return !selectedProducts.has(item.product.name);
+        });
+
+        if (filteredInventory.length > 0) {
+            optimizedVendors.push({ ...vendor, inventory: filteredInventory });
+            filteredInventory.forEach((item) => selectedProducts.add(item.product.name));
+        }
+    }
+
+    return optimizedVendors;
+}
+
+//##########################################################################################################
+
+//############################################ BY TOTAL DISTANCE ###########################################
+function filterStoresByDistance(vendors: StoreInventory[], userLocation: Coordinates): StoreInventory[] {
+    // 1: Sort by proximity to user
+    let sortedVendors = vendors.sort((a, b) => {
+        const distanceA = getDistance(userLocation, a.store.location);
+        const distanceB = getDistance(userLocation, b.store.location);
+        return distanceA - distanceB;
+    });
+
+    // 2: Ensure only necessary stores are in the route
+    let selectedProducts = new Set<string>();
+    let optimizedVendors: StoreInventory[] = [];
+
+    for (let vendor of sortedVendors) {
+        let filteredInventory = vendor.inventory.filter((item) => {
+            // 3: Only keep products that havent been added to the shopping list yet
+            return !selectedProducts.has(item.product.name);
+        });
+
+        if (filteredInventory.length > 0) {
+            optimizedVendors.push({ ...vendor, inventory: filteredInventory });
+            filteredInventory.forEach((item) => selectedProducts.add(item.product.name));
+        }
+    }
+
+    return optimizedVendors;
+}
+//###########################################################################################################
+
+
+//############################################ BY PRICE ############################################
+function filterStoresByPrice(vendors: StoreInventory[]): StoreInventory[] {
     let productMap = new Map<string, { price: number; storeId: number }>();
     let storeUsage = new Map<number, boolean>(); // Track which stores are actually used
 
-    // 🟢 Step 1: Find the cheapest price for each product
+    // Step 1: Find the cheapest price for each product
     vendors.forEach((vendor) => {
         vendor.inventory.forEach((item) => {
             const existing = productMap.get(item.product.name);
@@ -56,7 +127,7 @@ function filterVendors(vendors: StoreInventory[]): StoreInventory[] {
         });
     });
 
-    // 🟢 Step 2: Assign each product to its cheapest vendor
+    // Step 2: Assign each product to its cheapest vendor
     let updatedVendors = vendors.map((vendor) => {
         let filteredInventory = vendor.inventory.filter((item) => {
             return productMap.get(item.product.name)?.storeId === vendor.store.id;
@@ -69,7 +140,7 @@ function filterVendors(vendors: StoreInventory[]): StoreInventory[] {
         return { ...vendor, inventory: filteredInventory };
     });
 
-    // 🟢 Step 3: Remove unnecessary stores (stores with no needed products)
+    // Step 3: Remove unnecessary stores (stores with no needed products)
     updatedVendors = updatedVendors.filter((vendor) => storeUsage.get(vendor.store.id) === true);
 
     return updatedVendors;
@@ -126,11 +197,14 @@ function calculateTotalDistance(
 
     return totalDistance;
 }
+//###########################################################################################################
 
-// Placeholder distance function (straight-line distance)
+// Placeholder distance function (straight-line distance), used by all filter options.
 function getDistance(a: Coordinates, b: Coordinates): number {
     return Math.sqrt(Math.pow(a.latitude - b.latitude, 2) + Math.pow(a.longitude - b.longitude, 2));
 }
+
+
 
 async function sendCart(cart: { cart: Product[] }) {
     try {
@@ -155,7 +229,14 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const [storeInventories, setStoreInventories] = useState<StoreInventory[]>([]);
     const [userLocation] = useState<Coordinates>({ latitude: 65.58306895412348, longitude: 22.158208878223377 });
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [priority, setPriority] = useState("cheapest");
+    const [latestVendorVisit, setLatestVendorVisit] = useState<StoreInventory[]>([]);
 
+    useEffect(() => {
+        if (latestVendorVisit.length > 0) {
+            updateRoute(latestVendorVisit);
+        }
+    }, [priority]);
 
     const handleAddToCart = () => {
         const productInput = document.getElementById('input-product-name') as HTMLInputElement;
@@ -168,20 +249,15 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
 
     const handleSubmitCart = async () => {
         setErrorMessage(null);
-        const shoppingCart = { cart };
+
         try {
+            const shoppingCart = { cart };
             const vendorVisits = await sendCart(shoppingCart);
-            console.log("📡 API Response:", vendorVisits); // Log raw API response
-            let storeInventories: StoreInventory[] = vendorVisits.map(mapStoreInventory);
-            console.log("✅ Mapped Store Inventories:", storeInventories); //Check if mapping breaks here
 
+            const mappedStoreInventories = vendorVisits.map(mapStoreInventory);
+            setLatestVendorVisit(mappedStoreInventories);
+            updateRoute(mappedStoreInventories);
 
-            storeInventories = filterVendors(storeInventories)
-            const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance)
-
-            clearResults();
-            storeInventories.forEach(addResult);
-            setStoreInventories(optimalRoute);
             setButtonPressed(true);
             setCart([]);
         } catch (error: any) {
@@ -191,6 +267,22 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
         }
     };
 
+    const updateRoute = (storeInventories: StoreInventory[]) => {
+        let optimizedStores = [...storeInventories];
+        if (priority === "cheapest") {
+            storeInventories = filterStoresByPrice(storeInventories);
+        } else if (priority === "shortest") {
+            storeInventories = filterStoresByDistance(storeInventories, userLocation);
+        } else if (priority === "hybrid") {
+            storeInventories = filterStoresByHybrid(storeInventories, userLocation);
+        }
+        const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance);
+
+        clearResults();
+        optimizedStores.forEach(addResult);
+        setStoreInventories(optimalRoute);
+    }
+
     const handleRemoveFromCart = (index: number) => {
         setCart(cart.filter((_, i) => i !== index));
     };
@@ -198,7 +290,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     return (
         <div className="flex flex-col gap-8 items-center justify-center h-screen">
             <div className="bg-slate-100 rounded-lg shadow-md p-8">
-                <h3 className='text-xl mb-4'>V1 Shop</h3>
+                <h3 className='text-xl mb-4'>V1 Shopping Optimizer</h3>
                 <div className="flex flex-row gap-4">
                     <input id="input-product-name"
                         className='px-2 border-1 border-gray-300 focus:outline-none focus:border-blue-500'
@@ -224,6 +316,9 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                     {errorMessage}
                 </div>
             )}
+            <div className="radioDiv">
+                {buttonPressed && <RouteChoiceRadio priority={priority} setPriority={setPriority} />}
+            </div>
             <div className="">
                 {cart.map((p, i) => (
                     <div

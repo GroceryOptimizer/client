@@ -2,7 +2,6 @@
 
 import { Card, CardHeader, CardBody, CardFooter } from '@heroui/card';
 import type { ReactElement, ReactNode } from 'react';
-import type { Product } from '~models';
 import { useCartStore } from '~/stores';
 
 type Props = {
