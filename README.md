@@ -101,7 +101,7 @@ The application offers several pages to enhance your shopping experience. You ca
 
 ## Usage  
 - Ensure the **Grocery Optimizer HUB** is running before starting the client.  
-- Use the UI to input a shopping cart and get optimized vendor visits.  
+- Use the UI to input a shopping cart and get optimized store visits.  
 
 ## Contributors  
 - [KikiBerg](https://github.com/KikiBerg)  
