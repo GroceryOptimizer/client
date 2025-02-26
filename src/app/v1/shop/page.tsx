@@ -45,24 +45,41 @@ function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
 
 //############################################ BY HYBRID SOLUTION ##########################################
 function filterStoresByHybrid(vendors: StoreInventory[], userLocation: Coordinates): StoreInventory[] {
-    const costWeight = 0.00002;  // Adjust this for more price priority (0.0 = no cost consideration)
-    const distanceWeight = 0.99998;  // Adjust this for more distance priority (1.0 = full distance-based)
+    const costWeight = 0.5;  // 50/50 Balance between cost and distance
+    const distanceWeight = 0.5;
 
-    // 1: Calculate weighted score, balance between cost & distance
-    let weightedVendors = vendors.map((vendor) => {
-        const distance = getDistance(userLocation, vendor.store.location);
+    // 1: Find min/max values for normalization
+    let minCost = Infinity, maxCost = 0;
+    let minDistance = Infinity, maxDistance = 0;
+
+    vendors.forEach((vendor) => {
         const totalCost = vendor.inventory.reduce((sum, item) => sum + item.price, 0);
+        const distance = getDistance(userLocation, vendor.store.location);
 
-        // Formula: Weighted combination of cost and distance
-        const hybridScore = (totalCost * costWeight) + (distance * distanceWeight);
+        if (totalCost < minCost) minCost = totalCost;
+        if (totalCost > maxCost) maxCost = totalCost;
+        if (distance < minDistance) minDistance = distance;
+        if (distance > maxDistance) maxDistance = distance;
+    });
+
+    // 2: Calculate normalized scores
+    let weightedVendors = vendors.map((vendor) => {
+        const totalCost = vendor.inventory.reduce((sum, item) => sum + item.price, 0);
+        const distance = getDistance(userLocation, vendor.store.location);
+
+        const normalizedCost = (totalCost - minCost) / (maxCost - minCost || 1);  // Avoid divide by zero
+        const normalizedDistance = (distance - minDistance) / (maxDistance - minDistance || 1);
+
+        // Weighted formula using normalized values
+        const hybridScore = (normalizedCost * costWeight) + (normalizedDistance * distanceWeight);
 
         return { ...vendor, hybridScore };
     });
 
-    // 2: Sort vendors based on their weighted hybrid score
+    // 3: Sort vendors by hybrid score
     weightedVendors.sort((a, b) => a.hybridScore - b.hybridScore);
 
-    // 3: Remove unnecessary stores after sorting
+    // 4: Remove unnecessary stores
     let selectedProducts = new Set<string>();
     let optimizedVendors: StoreInventory[] = [];
 
@@ -231,6 +248,8 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [priority, setPriority] = useState("cheapest");
     const [latestVendorVisit, setLatestVendorVisit] = useState<StoreInventory[]>([]);
+    const [cartErrorMessage, setCartErrorMessage] = useState<string | null>();
+    const [routeCosts, setRouteCosts] = useState({ cheapest: 0, shortest: 0, hybrid: 0 });
 
     useEffect(() => {
         if (latestVendorVisit.length > 0) {
@@ -243,8 +262,14 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
         if (!productInput) return;
 
         const newProduct: Product = { name: productInput.value };
+        if (cart.some((p) => p.name.toLocaleLowerCase() === newProduct.name.toLocaleLowerCase())) {
+            setCartErrorMessage(`"${newProduct.name}" is already in the cart.`);
+            setTimeout(() => setCartErrorMessage(null), 3000);
+            return;
+        }
         setCart([...cart, newProduct]);
         productInput.value = '';
+        setCartErrorMessage(null);
     };
 
     const handleSubmitCart = async () => {
@@ -267,19 +292,35 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
         }
     };
 
+    const calculateTotalCost = (storeInventories: StoreInventory[]): number => {
+        return storeInventories.reduce((total, store) => {
+            return total + store.inventory.reduce((sum, item) => sum + item.price, 0)
+        }, 0);
+    };
+
     const updateRoute = (storeInventories: StoreInventory[]) => {
-        let optimizedStores = [...storeInventories];
+        let optimizedCheapest = filterStoresByPrice([...storeInventories]);
+        let optimizedShortest = filterStoresByDistance([...storeInventories], userLocation);
+        let optimizedHybrid = filterStoresByHybrid([...storeInventories], userLocation);
+
+        setRouteCosts({
+            cheapest: calculateTotalCost(optimizedCheapest),
+            shortest: calculateTotalCost(optimizedShortest),
+            hybrid: calculateTotalCost(optimizedHybrid)
+        });
+
+        let finalRoute: StoreInventory[] = [];
         if (priority === "cheapest") {
-            storeInventories = filterStoresByPrice(storeInventories);
+            finalRoute = optimizedCheapest;
         } else if (priority === "shortest") {
-            storeInventories = filterStoresByDistance(storeInventories, userLocation);
+            finalRoute = optimizedShortest;
         } else if (priority === "hybrid") {
-            storeInventories = filterStoresByHybrid(storeInventories, userLocation);
+            finalRoute = optimizedHybrid;
         }
-        const optimalRoute = findOptimalRoute(userLocation, storeInventories, getDistance);
+        const optimalRoute = findOptimalRoute(userLocation, finalRoute, getDistance);
 
         clearResults();
-        optimizedStores.forEach(addResult);
+        finalRoute.forEach(addResult);
         setStoreInventories(optimalRoute);
     }
 
@@ -289,7 +330,7 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
 
     return (
         <div className="flex flex-col gap-8 items-center justify-center h-screen">
-            <div className="bg-slate-100 rounded-lg shadow-md p-8">
+            {!buttonPressed && <div className="bg-slate-100 rounded-lg shadow-md p-8">
                 <h3 className='text-xl mb-4'>V1 Shopping Optimizer</h3>
                 <div className="flex flex-row gap-4">
                     <input id="input-product-name"
@@ -310,16 +351,22 @@ export default function V1ShopPage({ children }: { children: ReactNode }) {
                         Send Cart
                     </button>
                 </div>
-            </div>
+            </div>}
+            {buttonPressed && <div className="backButtonDiv">
+                <button className='bg-red-500 text-white px-4 py2 rounded-md hover:bg-red-60' onClick={() => setButtonPressed(false)}>Back</button>
+            </div>}
+            {cartErrorMessage && (
+                <div className='bg-yellow-100 border border-yellow-400 text-yellow-600 px-4 py-2 rounded-md mt-2'>{cartErrorMessage}</div>
+            )}
             {errorMessage && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md mt-4">
                     {errorMessage}
                 </div>
             )}
             <div className="radioDiv">
-                {buttonPressed && <RouteChoiceRadio priority={priority} setPriority={setPriority} />}
+                {buttonPressed && <RouteChoiceRadio priority={priority} setPriority={setPriority} routeCosts={routeCosts} />}
             </div>
-            <div className="">
+            <div className="grid grid-cols-4 gap-4 p-4">
                 {cart.map((p, i) => (
                     <div
                         key={i}
