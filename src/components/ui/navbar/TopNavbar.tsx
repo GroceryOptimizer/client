@@ -74,9 +74,9 @@ export default function TopNavbar(): ReactElement {
                   </DropdownItem>
                 )}
               </DropdownSection>
-              <DropdownSection>
-                <DropdownItem key={Math.random()}><span onClick={() => clearCart()}>Clear</span></DropdownItem>
-                <DropdownItem key={Math.random()}><span onClick={async () => await sendCart()}>Send</span></DropdownItem>
+              <DropdownSection className='flex flex-col items-center'>
+                <DropdownItem key={Math.random()}><span className="bg-red-300 border border-red-500 px-10 py-1 rounded-md" onClick={() => clearCart()}>Clear</span></DropdownItem>
+                <DropdownItem key={Math.random()}><span className="bg-green-300 border border-green-500 px-10 py-1 rounded-md" onClick={async () => await sendCart()}>Send</span></DropdownItem>
               </DropdownSection>
             </DropdownMenu>
           </Dropdown>

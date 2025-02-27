@@ -93,7 +93,7 @@ export default function OptimizePage() {
   }, [results])
 
   return (
-    <div>
+    <div className="flex flex-col items-center">
       <div className="radioDiv">
         <RouteChoiceRadio priority={priority} setPriority={setPriority} routeCosts={routeCosts} />
       </div>

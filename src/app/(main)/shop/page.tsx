@@ -199,7 +199,7 @@ export default function ShopPage({ children }: Props): ReactElement {
                 <p>{x.description}</p>
               </ProductCardBody>
               <ProductCardFooter key={i}>
-                <button onClick={() => handleAddToCart(x)} >Add to card</button>
+                <button className="bg-green-300 border border-green-500 px-4 py-1 rounded-md" onClick={() => handleAddToCart(x)} >Add to card</button>
               </ProductCardFooter>
             </ProductCard>
           ))}
