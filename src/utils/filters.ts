@@ -1,12 +1,13 @@
 import { StoreInventory, Coordinates } from '~/models/v1';
 import { getDistance } from './helpers';
+import { useState } from 'react';
 
 export function filterStoresByHybrid(
   vendors: StoreInventory[],
-  userLocation: Coordinates
+  userLocation: Coordinates,
+  costWeight: number,
+  distanceWeight: number
 ): StoreInventory[] {
-  const costWeight = 0.5; // 50/50 Balance between cost and distance
-  const distanceWeight = 0.5;
 
   // 1: Find min/max values for normalization
   let minCost = Infinity,

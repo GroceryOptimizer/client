@@ -19,6 +19,8 @@ export default function OptimizePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [priority, setPriority] = useState("cheapest");
   const [routeCosts, setRouteCosts] = useState({ cheapest: 0, shortest: 0, hybrid: 0 });
+  const [costWeight, setCostWeight] = useState(0.5);
+  const [distanceWeight, setDistanceWeight] = useState(0.5);
 
   function findOptimalRoute(
     start: Coordinates,
@@ -66,7 +68,7 @@ export default function OptimizePage() {
   const updateRoute = (storeInventories: StoreInventory[]) => {
     let optimizedCheapest = filterStoresByPrice([...storeInventories]);
     let optimizedShortest = filterStoresByDistance([...storeInventories], userLocation);
-    let optimizedHybrid = filterStoresByHybrid([...storeInventories], userLocation);
+    let optimizedHybrid = filterStoresByHybrid([...storeInventories], userLocation, costWeight, distanceWeight);
 
     setRouteCosts({
       cheapest: calculateTotalCost(optimizedCheapest),
@@ -85,7 +87,7 @@ export default function OptimizePage() {
       updateRoute(results);
     }
     setStoreInventories(routes.find((x) => x.name.toLowerCase() === priority.toLowerCase())?.stores ?? []);
-  }, [priority, results]);
+  }, [priority, results, costWeight]);
 
   useEffect(() => {
     console.log("OptimizePage effect triggered")
@@ -95,7 +97,10 @@ export default function OptimizePage() {
   return (
     <div className="flex flex-col items-center">
       <div className="radioDiv">
-        <RouteChoiceRadio priority={priority} setPriority={setPriority} routeCosts={routeCosts} />
+        <RouteChoiceRadio
+          priority={priority}
+          setPriority={setPriority}
+          routeCosts={routeCosts} />
       </div>
       <div className='leaflet-container bg-white-500'>
         <MapComponent vendorVisits={storeInventories} userLocation={userLocation} />
