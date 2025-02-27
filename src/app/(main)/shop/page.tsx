@@ -7,12 +7,92 @@ import { useCartStore } from '~/stores';
 
 import { mockProducts } from '~/data/mockProducts';
 import { Product } from '~models';
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger } from '@heroui/react';
+import MapComponent from "../../../components/ui/MapComponent/MapComponent";
+import ShoppingRouteComponent from "../../../components/ui/ShoppingRouteComponent/ShoppingRouteComponent";
+import RouteChoiceRadio from '~components/ui/RouteChoiceRadio/RouteChoiceRadio';
+import axios from 'axios';
+import { Coordinates, StoreInventory } from '~/models/v1';
+import { mapStoreInventory } from '~/utils/mappers';
+import { getAllPermutations, getDistance } from '~/utils/helpers';
+import { filterStoresByPrice, filterStoresByDistance, filterStoresByHybrid } from '~/utils/filters';
+import { useResultStore } from '~/stores/resultStore';
 
 type Props = {
   children: ReactNode;
 };
 
+function findOptimalRoute(
+  start: Coordinates,
+  vendors: StoreInventory[],
+  getDistance: (a: Coordinates, b: Coordinates) => number
+): StoreInventory[] {
+
+  const allRoutes = getAllPermutations(vendors);
+  let bestRoute: StoreInventory[] = [];
+  let bestDistance = Infinity;
+
+  allRoutes.forEach((route) => {
+      let totalDistance = calculateTotalDistance(start, route, getDistance);
+      if (totalDistance < bestDistance) {
+          bestDistance = totalDistance;
+          bestRoute = route;
+      }
+  });
+
+  return bestRoute;
+}
+
+function calculateTotalDistance(
+  start: Coordinates,
+  route: StoreInventory[],
+  getDistance: (a: Coordinates, b: Coordinates) => number
+): number {
+  let totalDistance = 0;
+  let prevLocation = start;
+
+  route.forEach((store) => {
+      totalDistance += getDistance(prevLocation, store.store.location);
+      prevLocation = store.store.location;
+  });
+
+  return totalDistance;
+}
+
+async function sendCart(cart: { cart: Product[] }) {
+  try {
+      const res = await axios.post('http://localhost:7049/api/cart', cart, {
+          headers: { 'Content-Type': 'application/json' },
+      });
+      return res.data;
+  } catch (error: any) {
+      console.error('Error sending cart:', error);
+      if (error.response?.status === 400) {
+          throw new Error("Some products were not found at any vendor.");
+      } else {
+          throw new Error(`Failed to send cart: ${error.response?.status} - ${error.message}`);
+      }
+  }
+}
+
 export default function ShopPage({ children }: Props): ReactElement {
+
+  const { add: addResult, clear: clearResults } = useResultStore();
+  const [buttonPressed, setButtonPressed] = useState(false);
+  const [storeInventories, setStoreInventories] = useState<StoreInventory[]>([]);
+  const [userLocation] = useState<Coordinates>({ latitude: 65.58306895412348, longitude: 22.158208878223377 });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [priority, setPriority] = useState("cheapest");
+  const [latestVendorVisit, setLatestVendorVisit] = useState<StoreInventory[]>([]);
+  const [cartErrorMessage, setCartErrorMessage] = useState<string | null>();
+  const [routeCosts, setRouteCosts] = useState({ cheapest: 0, shortest: 0, hybrid: 0 });
+
+  useEffect(() => {
+    if (latestVendorVisit.length > 0) {
+      updateRoute(latestVendorVisit);
+    }
+  }, [priority]);
+
   const products = mockProducts;
   const addToCart = useCartStore((state) => state.add);
   const clearCart = useCartStore((state) => state.clear);
@@ -27,6 +107,38 @@ export default function ShopPage({ children }: Props): ReactElement {
   const handleAddToCart = (item: Product) => {
     addToCart(item);
   };
+
+  const calculateTotalCost = (storeInventories: StoreInventory[]): number => {
+    return storeInventories.reduce((total, store) => {
+      return total + store.inventory.reduce((sum, item) => sum + item.price, 0)
+    }, 0);
+  };
+
+  const updateRoute = (storeInventories: StoreInventory[]) => {
+    let optimizedCheapest = filterStoresByPrice([...storeInventories]);
+    let optimizedShortest = filterStoresByDistance([...storeInventories], userLocation);
+    let optimizedHybrid = filterStoresByHybrid([...storeInventories], userLocation);
+
+    setRouteCosts({
+      cheapest: calculateTotalCost(optimizedCheapest),
+      shortest: calculateTotalCost(optimizedShortest),
+      hybrid: calculateTotalCost(optimizedHybrid)
+    });
+
+    let finalRoute: StoreInventory[] = [];
+    if (priority === "cheapest") {
+      finalRoute = optimizedCheapest;
+    } else if (priority === "shortest") {
+      finalRoute = optimizedShortest;
+    } else if (priority === "hybrid") {
+      finalRoute = optimizedHybrid;
+    }
+    const optimalRoute = findOptimalRoute(userLocation, finalRoute, getDistance);
+
+    clearResults();
+    finalRoute.forEach(addResult);
+    setStoreInventories(optimalRoute);
+  }
 
   useEffect(() => {
     console.log(cart);
@@ -72,18 +184,19 @@ export default function ShopPage({ children }: Props): ReactElement {
         </ul>
       </div>
 
+
+
       {/* Product Grid */}
       <div className="">
         <ProductGrid>
           {products.map((x, i) => (
             <ProductCard key={i}>
-              <ProductCardHeader>
+              <ProductCardHeader className='flex flex-col'>
+                <img src={x.image} alt={x.name} />
                 <h2>{x.name}</h2>
               </ProductCardHeader>
               <ProductCardBody>
-                <p>{x.value} {x.unit}</p>
-                <p>Price: ${x.price}</p>
-
+                <p>{x.description}</p>
               </ProductCardBody>
               <ProductCardFooter key={i}>
                 <button onClick={() => handleAddToCart(x)} >Add to card</button>

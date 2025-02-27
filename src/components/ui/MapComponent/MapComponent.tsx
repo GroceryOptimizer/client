@@ -9,7 +9,6 @@ interface MapProps {
 }
 
 const MapComponent: React.FC<MapProps> = ({ vendorVisits, userLocation }) => {
-
     useEffect(() => {
         // Ensure the map is only initialized once
         if (!document.getElementById("map")) return;

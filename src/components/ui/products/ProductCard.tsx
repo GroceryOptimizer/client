@@ -14,8 +14,8 @@ export function ProductCard({ children }: Props): ReactElement {
   return <Card>{children}</Card>;
 }
 
-export function ProductCardHeader({ children }: { children: ReactNode }): ReactElement {
-  return <CardHeader>{children}</CardHeader>;
+export function ProductCardHeader({ className, children }: { className?: string, children: ReactNode }): ReactElement {
+  return <CardHeader className={className}>{children}</CardHeader>;
 }
 
 export function ProductCardBody({ children }: { children: ReactNode }): ReactElement {
