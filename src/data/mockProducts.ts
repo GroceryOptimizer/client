@@ -8,7 +8,7 @@ export const mockProducts: Product[] = [
         category: 'Fiskkonserver',
         description: 'Klassisk svensk matjessill, perfekt till midsommar eller andra högtider.',
         sku: 'abba_matjessill',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1644248566/cloud/244367/Matjessill%20Klassisk.jpg',
     },
     {
         id: '99B3E53C-EFE0-456C-89CE-E4F42BAEF09A',
@@ -26,7 +26,7 @@ export const mockProducts: Product[] = [
         category: 'Kaffe',
         description: 'Mörkrostat kaffe med en fyllig och kraftig smak.',
         sku: 'zoegas_skanerost',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1687270526/cloud/283708/Bryggkaffe%20Sk%C3%A5nerost.jpg',
     },
     {
         id: 'B7AD2594-CF46-4328-BE12-6B37B42D52EE',
@@ -35,7 +35,7 @@ export const mockProducts: Product[] = [
         category: 'Mjölk',
         description: 'Svensk mellanmjölk med 1,5% fett.',
         sku: 'arla_mjolk',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1736636356/cloud/423043/Mellanmj%C3%B6lk%20F%C3%A4rsk.jpg',
     },
     {
         id: '4D5E5B20-1885-4279-BFF8-EF730FF289F0',
@@ -44,7 +44,7 @@ export const mockProducts: Product[] = [
         category: 'Grönsaker',
         description: 'Frysta ärtor av hög kvalitet, perfekta som tillbehör till middagen.',
         sku: 'findus_frysta_artor',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1626570810/cloud/126327/%C3%84rter.jpg',
     },
     {
         id: '8D4667EA-D6B4-4252-A0EE-351737007D06',
@@ -53,7 +53,7 @@ export const mockProducts: Product[] = [
         category: 'Glass',
         description: 'Krämig vaniljglass, en favorit hos många.',
         sku: 'gb_glass_vanilj',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1681996658/cloud/279485/Glass%20Vanilj.jpg',
     },
     {
         id: '6750BA42-3371-4753-82C0-1A4E5344ADE2',
@@ -62,7 +62,7 @@ export const mockProducts: Product[] = [
         category: 'Choklad',
         description: 'En klassisk svensk mjölkchokladkaka.',
         sku: 'cloetta_marabou',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1702366952/cloud/309468/Mj%C3%B6lkchoklad.jpg',
     },
     {
         id: '8926A5A1-437C-4EBD-B331-E6A9BFA02C5B',
@@ -71,7 +71,7 @@ export const mockProducts: Product[] = [
         category: 'Tex Mex',
         description: 'Krispiga tacoskal, perfekta för att göra tacos.',
         sku: 'santa_maria_tacoskal',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1700133743/cloud/302409/Tacoskal%2012-pack.jpg',
     },
     {
         id: 'BBF52A56-6A7F-42CA-ADAE-B41DB4345D80',
@@ -80,7 +80,7 @@ export const mockProducts: Product[] = [
         category: 'Ost',
         description: 'Krämig mjukost med olika smaker.',
         sku: 'kavli_ost',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1623233951/190934/Skinkost.jpg',
     },
     {
         id: 'B031364E-3453-4CCD-B1E5-6C0918A54DB1',
@@ -89,7 +89,7 @@ export const mockProducts: Product[] = [
         category: 'Bröd',
         description: 'Mjukt och smakrikt bröd från Hönö.',
         sku: 'polar_brod_honokaka',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1704186808/cloud/315254/H%C3%B6n%C3%B6kaka.jpg',
     },
     {
         id: '3CB591C8-D3ED-4A3C-A26A-698167C73BE1',
@@ -98,7 +98,7 @@ export const mockProducts: Product[] = [
         category: 'Senap',
         description: 'En klassisk svensk senap med en mild och söt smak.',
         sku: 'skansen_senap',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1623235350/113581/Senap%20Original%20.jpg',
     },
     {
         id: '7033AE51-569F-418F-BC8A-4D2E688AB179',
@@ -107,7 +107,7 @@ export const mockProducts: Product[] = [
         category: 'Knäckebröd',
         description: 'Ett tunt och krispigt knäckebröd, perfekt till frukost eller mellanmål.',
         sku: 'wasa_knackebrod',
-        image: 'https://placehold.co/256x256.png',
+        image: 'https://res.cloudinary.com/coopsverige/images/e_sharpen,f_auto,fl_clip,fl_progressive,q_90,c_lpad,g_center,h_660,w_660/v1585352767/396437/Kn%C3%A4ckebr%C3%B6d%20Husman.jpg',
     },
     {
         id: '0481A834-44BB-4298-807E-E3DDCEF6481B',

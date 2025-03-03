@@ -7,7 +7,7 @@ type Props = {
 
 export default function MainLayout({ children }: Props): ReactElement {
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 -z-50">
             <TopNavbar />
             <div>{children}</div>
         </div>

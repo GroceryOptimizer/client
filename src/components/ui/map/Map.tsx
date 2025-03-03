@@ -1,29 +1,32 @@
-import React, { useEffect } from 'react';
+import { ReactElement, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Coordinates, StoreInventory } from '~models';
 
-interface MapProps {
-    vendorVisits: StoreInventory[];
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+
+interface Props {
+    className?: string;
+    stores: StoreInventory[];
     userLocation: Coordinates;
 }
 
-const MapComponent: React.FC<MapProps> = ({ vendorVisits, userLocation }) => {
+export default function Map({ className, stores, userLocation }: Props): ReactElement {
+    const mapRef = useRef<HTMLDivElement | null>(null);
+    const map = useRef<L.Map | null>(null);
+
     useEffect(() => {
-        // Ensure the map is only initialized once
-        if (!document.getElementById('map')) return;
+        if (!(mapRef.current && !map.current)) return;
 
-        // Create the map
-        const map = L.map('map', {
-            center: [userLocation.latitude, userLocation.longitude],
-            zoom: 16,
-        });
+        map.current = L.map(mapRef.current).setView(
+            [userLocation.latitude, userLocation.longitude],
+            16
+        );
 
-        // Add a tile layer (OpenStreetMap as default)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }).addTo(map);
+        }).addTo(map.current);
 
         const customIcon = L.icon({
             iconUrl: '/marker-icon.png',
@@ -44,20 +47,22 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits, userLocation }) => {
         const userMarker = L.marker([userLocation.latitude, userLocation.longitude], {
             icon: userIcon,
         })
-            .addTo(map)
+            .addTo(map.current)
             .bindPopup('Your location');
 
         const storeLocations: L.LatLngTuple[] = [[userLocation.latitude, userLocation.longitude]];
 
-        vendorVisits.forEach((visit) => {
-            const { name, location } = visit.store;
+        stores.forEach((s) => {
+            if (!map.current) return;
+
+            const { name, location } = s.store;
             storeLocations.push([location.latitude, location.longitude] as L.LatLngTuple);
-            const productList = visit.inventory
+            const productList = s.inventory
                 .map((item) => `${item.product.name}: ${item.price} SEK`)
                 .join('<br>');
 
             L.marker([location.latitude, location.longitude], { icon: customIcon })
-                .addTo(map)
+                .addTo(map.current)
                 .bindPopup(`<b>${name}</b><br> ${productList}`);
         });
 
@@ -66,18 +71,18 @@ const MapComponent: React.FC<MapProps> = ({ vendorVisits, userLocation }) => {
                 color: 'blue',
                 weight: 4,
                 opacity: 0.7,
-            }).addTo(map);
+            }).addTo(map.current);
 
-            map.fitBounds(routePolyline.getBounds());
+            map.current.fitBounds(routePolyline.getBounds());
         }
 
         return () => {
-            // Cleanup function to remove map instance on component unmount
-            map.remove();
+            if (map.current) {
+                map.current.remove();
+                map.current = null;
+            }
         };
-    }, [vendorVisits, userLocation]);
+    }, [stores, userLocation]);
 
-    return <div id="map" style={{ width: '100%', height: '500px' }} />;
-};
-
-export default MapComponent;
+    return <div ref={mapRef} className={className} />;
+}

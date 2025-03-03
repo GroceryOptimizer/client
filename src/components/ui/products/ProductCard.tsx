@@ -1,35 +1,43 @@
 'use client';
 
-import { Card, CardHeader, CardBody, CardFooter } from '@heroui/card';
 import type { ReactElement, ReactNode } from 'react';
-import { useCartStore } from '~/stores';
+import { Button, Card, CardHeader, CardBody, CardFooter } from '@heroui/react';
+
 import { Product } from '~models';
 
 type ProductCardProps = {
     children?: ReactNode;
-    item?: Product;
+    product: Product;
+    addToCart: (item: Product) => void;
 };
 
-export function ProductCard({ children }: ProductCardProps): ReactElement {
-    const addToCart = useCartStore((state) => state.add);
+export function ProductCard({ children, product, addToCart }: ProductCardProps): ReactElement {
+    return (
+        <Card className="max-w-64 p-2">
+            <CardHeader className="flex flex-col">
+                <div className="aspect-w-1 aspect-h-1 ">
+                    <img
+                        src={product.image}
+                        alt={product.name}
+                        className="object-contain w-full h-full"
+                    />
+                </div>
 
-    return <Card>{children}</Card>;
-}
-
-export function ProductCardHeader({
-    className,
-    children,
-}: {
-    className?: string;
-    children: ReactNode;
-}): ReactElement {
-    return <CardHeader className={className}>{children}</CardHeader>;
-}
-
-export function ProductCardBody({ children }: { children: ReactNode }): ReactElement {
-    return <CardBody>{children}</CardBody>;
-}
-
-export function ProductCardFooter({ children }: { children: ReactNode }): ReactElement {
-    return <CardFooter>{children}</CardFooter>;
+                <h2 className="text-l font-bold text-gray-900 mt-2">{product.name}</h2>
+                <p className="text-sm text-center font-semibold text-gray-700">{product.brand}</p>
+            </CardHeader>
+            <CardBody className='px-4'>
+                <p className="text-sm text-gray-800">{product.description}</p>
+            </CardBody>
+            <CardFooter>
+                <Button
+                    color="secondary"
+                    onPress={() => addToCart(product)}
+                    className="w-full mx-4"
+                >
+                    Köp
+                </Button>
+            </CardFooter>
+        </Card>
+    );
 }

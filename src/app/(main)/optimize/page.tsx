@@ -5,9 +5,9 @@ import { Coordinates, StoreInventory } from '~models';
 import { useRouteStore, useResultStore } from '~/stores';
 import { filterStoresByDistance, filterStoresByHybrid, filterStoresByPrice } from '~/utils/filters';
 import { getAllPermutations, getDistance } from '~/utils/helpers';
-import MapComponent from '~components/ui/MapComponent/MapComponent';
-import RouteChoiceRadio from '~components/ui/RouteChoiceRadio/RouteChoiceRadio';
-import ShoppingRouteComponent from '~components/ui/ShoppingRouteComponent/ShoppingRouteComponent';
+import Map from '~components/ui/map/Map';
+import RouteChoiceRadio from '~components/ui/route/RouteChoiceRadio';
+import ShoppingRouteComponent from '~components/ui/route/ShoppingRouteComponent';
 
 export default function OptimizePage() {
     const { stores: results } = useResultStore();
@@ -19,8 +19,8 @@ export default function OptimizePage() {
     });
     const [priority, setPriority] = useState('cheapest');
     const [routeCosts, setRouteCosts] = useState({ cheapest: 0, shortest: 0, hybrid: 0 });
-  const [costWeight, setCostWeight] = useState(0.5);
-  const [distanceWeight, setDistanceWeight] = useState(0.5);
+    const [costWeight, setCostWeight] = useState(0.5);
+    const [distanceWeight, setDistanceWeight] = useState(0.5);
 
     function findOptimalRoute(
         start: Coordinates,
@@ -67,7 +67,12 @@ export default function OptimizePage() {
     const updateRoute = (storeInventories: StoreInventory[]) => {
         let optimizedCheapest = filterStoresByPrice([...storeInventories]);
         let optimizedShortest = filterStoresByDistance([...storeInventories], userLocation);
-        let optimizedHybrid = filterStoresByHybrid([...storeInventories], userLocation, costWeight, distanceWeight);
+        let optimizedHybrid = filterStoresByHybrid(
+            [...storeInventories],
+            userLocation,
+            costWeight,
+            distanceWeight
+        );
 
         setRouteCosts({
             cheapest: calculateTotalCost(optimizedCheapest),
@@ -100,23 +105,22 @@ export default function OptimizePage() {
     }, [priority, results, costWeight]);
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="radioDiv">
-                <RouteChoiceRadio
-         
-                    priority={priority}
-         
-                    setPriority={setPriority}
-         
-                    routeCosts={routeCosts}
-                />
+        <>
+            <div className="max-w-md p-8">
+                <div className="bg-slate-100 rounded-lg shadow-md relative z-10 flex flex-col">
+                    <RouteChoiceRadio
+                        priority={priority}
+                        setPriority={setPriority}
+                        routeCosts={routeCosts}
+                    />
+                    <ShoppingRouteComponent route={storeInventories} />
+                </div>
             </div>
-            <div className="leaflet-container bg-white-500">
-                <MapComponent vendorVisits={storeInventories} userLocation={userLocation} />
-            </div>
-            <div className="shoppingRouteDiv">
-                <ShoppingRouteComponent route={storeInventories} />
-            </div>
-        </div>
+            <Map
+                stores={storeInventories}
+                userLocation={userLocation}
+                className="absolute top-0 left-0 w-screen h-screen -z-0"
+            />
+        </>
     );
 }

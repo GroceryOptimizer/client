@@ -41,10 +41,10 @@ export default function TopNavbar(): ReactElement {
             </NavbarBrand>
             <NavbarContent>
                 <NavbarItem>
-                    <Link href="/shop">Shop</Link>
+                    <Link href="/shop">Handla</Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Link href="/optimize">Route</Link>
+                    <Link href="/optimize">Karta</Link>
                 </NavbarItem>
             </NavbarContent>
             <NavbarContent justify="end">
