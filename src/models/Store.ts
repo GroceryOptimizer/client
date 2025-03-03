@@ -1,7 +1,12 @@
-import { Coordinates } from "./Coordinates";
+import { Coordinates, StockItem } from '~models';
 
 export interface Store {
-  id: string;
-  name: string;
-  location: Coordinates;
+    id: number;
+    name: string;
+    location: Coordinates;
+}
+
+export interface StoreInventory {
+    store: Store;
+    inventory: StockItem[];
 }

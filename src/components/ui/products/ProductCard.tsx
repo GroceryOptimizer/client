@@ -2,27 +2,34 @@
 
 import { Card, CardHeader, CardBody, CardFooter } from '@heroui/card';
 import type { ReactElement, ReactNode } from 'react';
-import type { Product } from '~models';
 import { useCartStore } from '~/stores';
+import { Product } from '~models';
 
-type Props = {
-  children: ReactNode;
+type ProductCardProps = {
+    children?: ReactNode;
+    item?: Product;
 };
 
-export function ProductCard({ children }: Props): ReactElement {
-  const addToCart = useCartStore((state) => state.add);
+export function ProductCard({ children }: ProductCardProps): ReactElement {
+    const addToCart = useCartStore((state) => state.add);
 
-  return <Card>{children}</Card>;
+    return <Card>{children}</Card>;
 }
 
-export function ProductCardHeader({ children }: { children: ReactNode }): ReactElement {
-  return <CardHeader>{children}</CardHeader>;
+export function ProductCardHeader({
+    className,
+    children,
+}: {
+    className?: string;
+    children: ReactNode;
+}): ReactElement {
+    return <CardHeader className={className}>{children}</CardHeader>;
 }
 
 export function ProductCardBody({ children }: { children: ReactNode }): ReactElement {
-  return <CardBody>{children}</CardBody>;
+    return <CardBody>{children}</CardBody>;
 }
 
 export function ProductCardFooter({ children }: { children: ReactNode }): ReactElement {
-  return <CardFooter>{children}</CardFooter>;
+    return <CardFooter>{children}</CardFooter>;
 }

@@ -1,13 +1,11 @@
-"use client"
+'use client';
 
-import { ReactElement } from "react";
-import { useCartStore } from "~/stores";
+import { ReactElement } from 'react';
+import { useCartStore } from '~/stores';
 
-type Props = {
+type Props = {};
 
-}
-
-export default function CartPage({ }: Props): ReactElement {
+export default function CartPage({}: Props): ReactElement {
     const cart = useCartStore((state) => state.cart);
     return (
         <div>

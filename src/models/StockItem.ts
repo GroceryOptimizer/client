@@ -1,6 +1,7 @@
-import { Product } from "./Product"
+import { Product } from '~models';
 
 export interface StockItem {
-  product: Product
-  quantity: number
+    product: Product;
+    price: number;
+    quantity: number;
 }

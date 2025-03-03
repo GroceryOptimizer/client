@@ -17,15 +17,14 @@ export interface StockItemDTO {
     price: number;
 }
 
-export interface VendorDTO {
+export interface StoreDTO {
     id: number;
     name: string;
-    coordinatesId: number;
-    coordinates: CoordinatesDTO;
+    location: CoordinatesDTO;
 }
 
-export interface VendorVisitDTO {
-    vendorId: number;
-    vendor: VendorDTO;
+export interface StoreVisitDTO {
+    storeId: number;
+    store: StoreDTO;
     stockItems: StockItemDTO[];
 }
