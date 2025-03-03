@@ -87,7 +87,7 @@ export default function OptimizePage() {
       updateRoute(results);
     }
     setStoreInventories(routes.find((x) => x.name.toLowerCase() === priority.toLowerCase())?.stores ?? []);
-  }, [priority, results, costWeight]);
+  }, [priority, results, costWeight, distanceWeight]);
 
   useEffect(() => {
     console.log("OptimizePage effect triggered")
@@ -100,7 +100,11 @@ export default function OptimizePage() {
         <RouteChoiceRadio
           priority={priority}
           setPriority={setPriority}
-          routeCosts={routeCosts} />
+          routeCosts={routeCosts}
+          costWeight={costWeight}
+          setCostWeight={setCostWeight}
+          distanceWeight={distanceWeight}
+          setDistanceWeight={setDistanceWeight} />
       </div>
       <div className='leaflet-container bg-white-500'>
         <MapComponent vendorVisits={storeInventories} userLocation={userLocation} />

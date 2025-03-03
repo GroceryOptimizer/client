@@ -1,22 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface RouteChoiceRadioProps {
     priority: string;
     setPriority: (priority: string) => void;
     routeCosts: { cheapest: number, shortest: number, hybrid: number }
-    // costWeight: number;
-    // setCostWeight: (value: number) => void;
-    // distanceWeight: number;
-    // setDistanceWeight: (value: number) => void;
+    costWeight: number;
+    setCostWeight: (value: number) => void;
+    distanceWeight: number;
+    setDistanceWeight: (value: number) => void;
 }
 
-const RouteChoiceRadio: React.FC<RouteChoiceRadioProps> = ({ priority, setPriority, routeCosts }) => {
-    const [costWeight, setCostWeight] = useState(() => {
-        return parseFloat(localStorage.getItem("costWeight") || "0.5");
-    });
-    const [distanceWeight, setDistanceWeight] = useState(() => {
-        return parseFloat(localStorage.getItem("distanceWeight") || "0.5");
-    });
+const RouteChoiceRadio: React.FC<RouteChoiceRadioProps> = ({ priority, setPriority, routeCosts, costWeight, setCostWeight, distanceWeight, setDistanceWeight }) => {
+    // const [costWeight, setCostWeight] = useState(() => {
+    //     return parseFloat(localStorage.getItem("costWeight") || "0.5");
+    // });
+    // const [distanceWeight, setDistanceWeight] = useState(() => {
+    //     return parseFloat(localStorage.getItem("distanceWeight") || "0.5");
+    // });
     const [tempCostWeight, setTempCostWeight] = useState(costWeight);
     const [tempDistanceWeight, setTempDistanceWeight] = useState(distanceWeight);
 
