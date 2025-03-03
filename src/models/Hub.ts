@@ -1,31 +1,30 @@
 export interface CoordinatesDTO {
-  id: number;
-  longitude: number;
-  latitude: number;
+    id: number;
+    longitude: number;
+    latitude: number;
 }
 
 export interface ProductDTO {
-  name: string;
+    name: string;
 }
 
 export interface ShoppingCartDTO {
-  cart: ProductDTO[];
+    cart: ProductDTO[];
 }
 
 export interface StockItemDTO {
-  product: ProductDTO;
-  price: number;
+    product: ProductDTO;
+    price: number;
 }
 
-export interface VendorDTO {
-  id: number;
-  name: string;
-  coordinatesId: number;
-  coordinates: CoordinatesDTO;
+export interface StoreDTO {
+    id: number;
+    name: string;
+    location: CoordinatesDTO;
 }
 
-export interface VendorVisitDTO {
-  vendorId: number;
-  vendor: VendorDTO;
-  stockItems: StockItemDTO[];
+export interface StoreVisitDTO {
+    storeId: number;
+    store: StoreDTO;
+    stockItems: StockItemDTO[];
 }

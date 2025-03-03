@@ -1,36 +1,53 @@
-import { Coordinates, CoordinatesDTO, Product, ProductDTO, StockItem, StockItemDTO, Store, StoreInventory, VendorDTO, VendorVisitDTO } from '~/models/v1'
+import { mockProducts } from '~/data/mockProducts';
+import {
+    Coordinates,
+    CoordinatesDTO,
+    Product,
+    ProductDTO,
+    StockItem,
+    StockItemDTO,
+    Store,
+    StoreInventory,
+    StoreDTO,
+    StoreVisitDTO,
+} from '~models';
 
-function mapCoordinates(coordinatesDTO: CoordinatesDTO): Coordinates {
+export function mapCoordinates(dto: CoordinatesDTO): Coordinates {
     return {
-        latitude: coordinatesDTO.latitude,
-        longitude: coordinatesDTO.longitude,
+        latitude: dto.latitude,
+        longitude: dto.longitude,
     };
 }
 
-function mapProduct(productDTO: ProductDTO): Product {
+export function mapProduct(dto: ProductDTO, products: Product[]): Product {
+    return (
+        products.find((p) => p.name.toLowerCase() === dto.name.toLowerCase()) ?? unknownProduct()
+    );
+}
+
+export function mapStockItem(dto: StockItemDTO, products: Product[]): StockItem {
     return {
-        name: productDTO.name,
+        product: mapProduct(dto.product, products),
+        price: dto.price,
+        quantity: 0,
     };
 }
 
-function mapStockItem(stockItemDTO: StockItemDTO): StockItem {
+export function mapStore(dto: StoreDTO): Store {
     return {
-        product: mapProduct(stockItemDTO.product),
-        price: stockItemDTO.price,
+        id: dto.id,
+        name: dto.name,
+        location: mapCoordinates(dto.location),
     };
 }
 
-function mapStore(vendorDTO: VendorDTO): Store {
+export function mapStoreInventory(dto: StoreVisitDTO): StoreInventory {
     return {
-        id: vendorDTO.id,
-        name: vendorDTO.name,
-        location: mapCoordinates(vendorDTO.location),
+        store: dto.store,
+        inventory: dto.stockItems.map((x) => mapStockItem(x, mockProducts)),
     };
 }
 
-export function mapStoreInventory(vendorVisitDTO: VendorVisitDTO): StoreInventory {
-    return {
-        store: mapStore(vendorVisitDTO.store),
-        inventory: vendorVisitDTO.stockItems.map(mapStockItem),
-    };
+function unknownProduct(): Product {
+    return { id: '', name: 'UNKOWN', brand: '', description: '', image: '', sku: '', category: '' };
 }

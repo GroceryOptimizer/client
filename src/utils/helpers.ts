@@ -1,4 +1,4 @@
-import { Coordinates } from "~/models/v1";
+import { Coordinates } from '~models';
 
 export function getAllPermutations<T>(arr: T[]): T[][] {
     if (arr.length <= 1) return [arr];
