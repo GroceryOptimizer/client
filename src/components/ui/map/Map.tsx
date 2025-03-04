@@ -1,9 +1,7 @@
-import { ReactElement, useEffect, useRef } from 'react';
+import { ReactElement, useEffect, useMemo, useRef } from 'react';
+import { Coordinates, StoreInventory } from '~models';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Coordinates, StoreInventory } from '~models';
-
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 
 interface Props {
     className?: string;
@@ -15,7 +13,33 @@ export default function Map({ className, stores, userLocation }: Props): ReactEl
     const mapRef = useRef<HTMLDivElement | null>(null);
     const map = useRef<L.Map | null>(null);
 
+    const customIcon = useMemo(
+        () =>
+            L.icon({
+                iconUrl: '/marker-icon.png',
+                shadowUrl: '/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+            }),
+        []
+    );
+
+    const userIcon = useMemo(
+        () =>
+            L.icon({
+                iconUrl: '/green-icon.png',
+                shadowUrl: '/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+            }),
+        []
+    );
+
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         if (!(mapRef.current && !map.current)) return;
 
         map.current = L.map(mapRef.current).setView(
@@ -27,22 +51,6 @@ export default function Map({ className, stores, userLocation }: Props): ReactEl
             attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map.current);
-
-        const customIcon = L.icon({
-            iconUrl: '/marker-icon.png',
-            shadowUrl: '/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
-
-        const userIcon = L.icon({
-            iconUrl: '/green-icon.png',
-            shadowUrl: '/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
 
         const userMarker = L.marker([userLocation.latitude, userLocation.longitude], {
             icon: userIcon,

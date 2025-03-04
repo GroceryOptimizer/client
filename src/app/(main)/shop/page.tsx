@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactElement, type ReactNode } from 'react';
-import ProductGrid from '~components/ui/products/ProductGrid';
+import { ProductGrid } from '~ui';
 import { Input } from '@heroui/react';
 import { Search as SearchIcon } from 'lucide-react';
 import { Product } from '~models';

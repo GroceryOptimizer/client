@@ -1,3 +1,5 @@
+'use client';
+
 export * from './cart';
 export * from './products';
 export * from './navbar';

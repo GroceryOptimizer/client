@@ -26,7 +26,7 @@ export function ProductCard({ children, product, addToCart }: ProductCardProps):
                 <h2 className="text-l font-bold text-gray-900 mt-2">{product.name}</h2>
                 <p className="text-sm text-center font-semibold text-gray-700">{product.brand}</p>
             </CardHeader>
-            <CardBody className='px-4'>
+            <CardBody className="px-4">
                 <p className="text-sm text-gray-800">{product.description}</p>
             </CardBody>
             <CardFooter>

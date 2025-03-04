@@ -1,2 +1,2 @@
 export * from './RouteChoiceRadio';
-export * from './ShoppingRouteComponent';
+export * from './ShoppingRoute';

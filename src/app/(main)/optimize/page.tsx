@@ -5,9 +5,7 @@ import { Coordinates, StoreInventory } from '~models';
 import { useRouteStore, useResultStore } from '~/stores';
 import { filterStoresByDistance, filterStoresByHybrid, filterStoresByPrice } from '~/utils/filters';
 import { getAllPermutations, getDistance } from '~/utils/helpers';
-import Map from '~components/ui/map/Map';
-import RouteChoiceRadio from '~components/ui/route/RouteChoiceRadio';
-import ShoppingRouteComponent from '~components/ui/route/ShoppingRouteComponent';
+import { DynamicMap as Map, RouteChoiceRadio, ShoppingRoute } from '~ui';
 
 export default function OptimizePage() {
     const { stores: results } = useResultStore();
@@ -113,7 +111,7 @@ export default function OptimizePage() {
                         setPriority={setPriority}
                         routeCosts={routeCosts}
                     />
-                    <ShoppingRouteComponent route={storeInventories} />
+                    <ShoppingRoute route={storeInventories} />
                 </div>
             </div>
             <Map

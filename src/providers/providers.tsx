@@ -5,21 +5,17 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { getConfig, loadConfig } from '~config';
 
 type Props = {
-  children: ReactNode;
+    children: ReactNode;
 };
 
 export default function Providers({ children }: Props) {
-  const [configLoaded, setConfigLoaded] = useState(false);
+    const [configLoaded, setConfigLoaded] = useState(false);
 
-  useEffect(() => {
-    loadConfig()
-      .catch((error) => console.error("Failed to load config", error))
-      .finally(() => setConfigLoaded(true));
-  }, []);
+    useEffect(() => {
+        loadConfig()
+            .catch((error) => console.error('Failed to load config', error))
+            .finally(() => setConfigLoaded(true));
+    }, []);
 
-  if (!configLoaded) return <div>Loading...</div>;
-
-  return (
-    <HeroUIProvider>{children}</HeroUIProvider>
-  );
+    return <HeroUIProvider>{children}</HeroUIProvider>;
 }

@@ -1,38 +1,30 @@
 'use client';
 
-import { Link, Navbar, NavbarBrand, NavbarContent, NavbarItem } from '@heroui/react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import { ReactElement } from 'react';
+import axios from 'axios';
+import { Link, Navbar, NavbarBrand, NavbarContent, NavbarItem } from '@heroui/react';
+import { useRouter } from 'next/navigation';
 import { useCartStore, useResultStore } from '~/stores';
 import { mapStoreInventory } from '~/utils/mappers';
-import CartDropDown from '../cart/CartDropDown';
+import { CartDropDown } from '~ui';
 
 export default function TopNavbar(): ReactElement {
     const router = useRouter();
-    const cart = useCartStore((state) => state.cart);
-    const { add: addResult, clear: clearResult, stores: results } = useResultStore();
-
-    const clearCart = () => {
-        console.log('Clearing cart');
-        useCartStore.setState({ cart: [] });
-    };
+    const { cart, clear: clearCart } = useCartStore();
+    const { add: addResult, clear: clearResult } = useResultStore();
 
     const sendCart = async () => {
         const postCart = { cart: cart.map((x) => ({ name: x.product.name })) };
         const res = await axios.post('http://localhost:7049/api/cart', postCart, {
             headers: { 'Content-Type': 'application/json' },
         });
-        console.log(res.data);
 
         clearResult();
         res.data.map(mapStoreInventory).forEach(addResult);
+        clearCart();
 
         router.push('/optimize');
-        return res.data;
     };
-
-    const removeFromCart = (name: string) => {};
 
     return (
         <Navbar>
@@ -49,7 +41,7 @@ export default function TopNavbar(): ReactElement {
             </NavbarContent>
             <NavbarContent justify="end">
                 <NavbarItem>
-                    <CartDropDown cart={cart} clear={clearCart} send={sendCart} />
+                    <CartDropDown cart={cart} clearCart={clearCart} sendCart={sendCart} />
                 </NavbarItem>
             </NavbarContent>
         </Navbar>

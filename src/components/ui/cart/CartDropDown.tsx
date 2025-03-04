@@ -1,3 +1,5 @@
+'use client';
+
 import {
     Dropdown,
     DropdownTrigger,
@@ -13,11 +15,11 @@ import { ShoppingCart as CartIcon, X as CloseIcon } from 'lucide-react';
 
 interface Props {
     cart: CartItem[];
-    clear: () => void;
-    send: () => void;
+    clearCart: () => void;
+    sendCart: () => void;
 }
 
-export default function CartDropDown({ cart, clear, send }: Props): ReactElement {
+export function CartDropDown({ cart, clearCart, sendCart }: Props): ReactElement {
     return (
         <Dropdown>
             <DropdownTrigger>
@@ -46,10 +48,10 @@ export default function CartDropDown({ cart, clear, send }: Props): ReactElement
                     )}
                 </DropdownSection>
                 <DropdownSection className="flex flex-col items-center">
-                    <DropdownItem key="clear-cart" className="text-danger" onPress={clear}>
+                    <DropdownItem key="clear-cart" className="text-danger" onPress={clearCart}>
                         Clear
                     </DropdownItem>
-                    <DropdownItem key="send-cart" className="text-success" onPress={send}>
+                    <DropdownItem key="send-cart" className="text-success" onPress={sendCart}>
                         Send
                     </DropdownItem>
                 </DropdownSection>

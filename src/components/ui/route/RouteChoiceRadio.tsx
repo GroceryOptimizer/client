@@ -1,34 +1,41 @@
+'use client';
+
 import { Button, ButtonGroup } from '@heroui/react';
 import { ReactElement, useState } from 'react';
+import { persist } from 'zustand/middleware';
+import { create } from 'zustand/react';
+
+interface RouteConfigStore {
+    costWeight: number;
+    distanceWeight: number;
+    setCostWeight: (value: number) => void;
+    setDistanceWeight: (value: number) => void;
+}
+
+export const useRouteConfigStore = create<RouteConfigStore>()(
+    persist(
+        (set) => ({
+            costWeight: 0.5,
+            distanceWeight: 0.5,
+            setCostWeight: (costWeight) => set({ costWeight }),
+            setDistanceWeight: (distanceWeight) => set({ distanceWeight }),
+        }),
+        { name: 'route-config-store' }
+    )
+);
 
 interface Props {
     priority: string;
-    setPriority: (priority: string) => void;
     routeCosts: { cheapest: number; shortest: number; hybrid: number };
-    // costWeight: number;
-    // setCostWeight: (value: number) => void;
-    // distanceWeight: number;
-    // setDistanceWeight: (value: number) => void;
+    setPriority: (priority: string) => void;
 }
 
-export default function RouteChoiceRadio({
-    priority,
-    setPriority,
-    routeCosts,
-}: Props): ReactElement {
-    const [costWeight, setCostWeight] = useState(() => {
-        return parseFloat(localStorage.getItem('costWeight') || '0.5');
-    });
-    const [distanceWeight, setDistanceWeight] = useState(() => {
-        return parseFloat(localStorage.getItem('distanceWeight') || '0.5');
-    });
+export function RouteChoiceRadio({ priority, routeCosts, setPriority }: Props): ReactElement {
+    const { costWeight, distanceWeight, setCostWeight, setDistanceWeight } = useRouteConfigStore();
     const [tempCostWeight, setTempCostWeight] = useState(costWeight);
     const [tempDistanceWeight, setTempDistanceWeight] = useState(distanceWeight);
 
     const applyChanges = () => {
-        localStorage.setItem('costWeight', tempCostWeight.toString());
-        localStorage.setItem('distanceWeight', tempDistanceWeight.toString());
-
         setCostWeight(tempCostWeight);
         setDistanceWeight(tempDistanceWeight);
     };
@@ -84,7 +91,9 @@ export default function RouteChoiceRadio({
                         <strong>Distance Weight:</strong> {tempDistanceWeight.toFixed(1)}
                     </div>
                     <div className="buttonDiv">
-                        <Button color='primary' onPress={applyChanges}>Spara</Button>
+                        <Button color="primary" onPress={applyChanges}>
+                            Spara
+                        </Button>
                     </div>
                 </div>
             )}
