@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactElement } from 'react';
-import { StoreInventory } from '~models';
+import { StockItem, StoreInventory } from '~models';
 import { ShoppingCart as CartIcon } from 'lucide-react';
 import { Accordion, AccordionItem } from '@heroui/react';
 
@@ -10,6 +10,25 @@ const storeLogoMap: StoreLogoMap = {
     ica: '/logo/ica_logo.svg',
     willys: '/logo/willys_logo.svg',
 };
+
+// Helper function to calculate the total cart cost (ignoring quantity)
+function calcTotalCost(route: StoreInventory[]): number {
+    return route.reduce((total, storeInventory) => {
+        return (
+            total +
+            storeInventory.inventory.reduce((storeTotal, stockItem) => {
+                return storeTotal + stockItem.price; // Ignore quantity
+            }, 0)
+        );
+    }, 0);
+}
+
+// Helper function to calculate the cost for a single store (ignoring quantity)
+function calcStoreCost(inventory: StockItem[]): number {
+    return inventory.reduce((total, stockItem) => {
+        return total + stockItem.price; // Ignore quantity
+    }, 0);
+}
 
 function getStoreLogo(storeName: string): string | undefined {
     const lowerCaseName = storeName.toLowerCase();
@@ -31,10 +50,16 @@ interface Props {
 
 export function ShoppingRoute({ route }: Props): ReactElement {
     const defaultExpandedKeys = route.map((_, i) => String(i + 1));
+    const totalCost = calcTotalCost(route);
+
     return (
         <div className="bg-white p-4 rounded-b-md">
-            <div className="flex flex-row gap-4">
-                <CartIcon /> <h3 className="text-xl font-semibold mb-2">Butiker</h3>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <CartIcon />
+                    <h3 className="text-xl font-semibold mb-0">Butiker</h3>
+                </div>
+                <div className="text-sm font-bold">{totalCost} kr</div>
             </div>
             <div className="max-h-[calc(100vh-24rem)] overflow-y-auto scrollbar">
                 <Accordion selectionMode="multiple" defaultExpandedKeys={defaultExpandedKeys}>
@@ -48,11 +73,12 @@ export function ShoppingRoute({ route }: Props): ReactElement {
                                         <img
                                             src={storeLogo}
                                             alt={`${s.store.name} logo`}
-                                            className="h-4 object-contain"
+                                            className="h-4 w-20 object-contain"
                                         />
                                     )
                                 }
                                 title={s.store.name}
+                                subtitle={calcStoreCost(s.inventory) + 'kr'}
                             >
                                 <div className="flex flex-col gap-2">
                                     {s.inventory.map((p, pi) => (

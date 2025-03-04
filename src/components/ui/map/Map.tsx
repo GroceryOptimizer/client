@@ -13,46 +13,41 @@ export default function Map({ className, stores, userLocation }: Props): ReactEl
     const mapRef = useRef<HTMLDivElement | null>(null);
     const map = useRef<L.Map | null>(null);
 
-    const customIcon = useMemo(
-        () =>
-            L.icon({
-                iconUrl: '/marker-icon.png',
-                shadowUrl: '/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-            }),
-        []
-    );
+    const customIcon = useMemo(() => {
+        return L.icon({
+            iconUrl: '/marker-icon.png',
+            shadowUrl: '/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
+    }, []);
 
-    const userIcon = useMemo(
-        () =>
-            L.icon({
-                iconUrl: '/green-icon.png',
-                shadowUrl: '/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-            }),
-        []
-    );
+    const userIcon = useMemo(() => {
+        return L.icon({
+            iconUrl: '/green-icon.png',
+            shadowUrl: '/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
+    }, []);
 
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-
         if (!(mapRef.current && !map.current)) return;
 
-        map.current = L.map(mapRef.current).setView(
-            [userLocation.latitude, userLocation.longitude],
-            16
-        );
+        map.current = L.map(mapRef.current, {
+            zoomControl: false,
+        }).setView([userLocation.latitude, userLocation.longitude], 16);
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map.current);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map.current);
 
-        const userMarker = L.marker([userLocation.latitude, userLocation.longitude], {
+        L.marker([userLocation.latitude, userLocation.longitude], {
             icon: userIcon,
         })
             .addTo(map.current)
@@ -90,7 +85,7 @@ export default function Map({ className, stores, userLocation }: Props): ReactEl
                 map.current = null;
             }
         };
-    }, [stores, userLocation]);
+    }, [stores, userLocation, customIcon, userIcon]);
 
     return <div ref={mapRef} className={className} />;
 }

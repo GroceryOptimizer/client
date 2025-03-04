@@ -1,6 +1,5 @@
 import { Coordinates, StoreInventory } from '~models';
 import { getDistance } from './helpers';
-import { useState } from 'react';
 
 export function filterStoresByHybrid(
     vendors: StoreInventory[],
