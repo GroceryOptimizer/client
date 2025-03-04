@@ -6,6 +6,7 @@ import { useRouteStore, useResultStore } from '~/stores';
 import { filterStoresByDistance, filterStoresByHybrid, filterStoresByPrice } from '~/utils/filters';
 import { getAllPermutations, getDistance } from '~/utils/helpers';
 import { DynamicMap as Map, RouteChoiceRadio, ShoppingRoute } from '~ui';
+import { useRouteConfigStore } from '~ui';
 
 export default function OptimizePage() {
     const { stores: results } = useResultStore();
@@ -17,8 +18,7 @@ export default function OptimizePage() {
     });
     const [priority, setPriority] = useState('cheapest');
     const [routeCosts, setRouteCosts] = useState({ cheapest: 0, shortest: 0, hybrid: 0 });
-    const [costWeight, setCostWeight] = useState(0.5);
-    const [distanceWeight, setDistanceWeight] = useState(0.5);
+    const { costWeight, distanceWeight, setCostWeight, setDistanceWeight } = useRouteConfigStore();
 
     function findOptimalRoute(
         start: Coordinates,
