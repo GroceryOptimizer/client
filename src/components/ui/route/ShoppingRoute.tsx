@@ -58,7 +58,7 @@ export function ShoppingRoute({ route }: Props): ReactElement {
                     <CartIcon />
                     <h3 className="text-xl font-semibold mb-0">Butiker</h3>
                 </div>
-                <div className="text-sm font-bold">{totalCost} kr</div>
+                <div className="text-sm font-semibold">{totalCost} kr</div>
             </div>
             <div className="max-h-[calc(100vh-24rem)] overflow-y-auto scrollbar">
                 <Accordion selectionMode="multiple" defaultExpandedKeys={defaultExpandedKeys}>
