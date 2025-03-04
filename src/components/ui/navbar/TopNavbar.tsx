@@ -18,11 +18,8 @@ export default function TopNavbar(): ReactElement {
         const res = await axios.post('http://localhost:7049/api/cart', postCart, {
             headers: { 'Content-Type': 'application/json' },
         });
-
         clearResult();
         res.data.map(mapStoreInventory).forEach(addResult);
-        clearCart();
-
         router.push('/optimize');
     };
 

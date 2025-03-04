@@ -44,6 +44,8 @@ export function CartDropDown({ cart, clearCart, sendCart }: Props): ReactElement
                         <DropdownItem
                             key={Math.random()}
                             endContent={<CloseIcon onClick={(e) => handleDeleteProduct(item)} className="text-large" />}
+                            textValue="{item.product.name}"
+
                         >
                             <div className="flex flex-row justify-between items-center gap-x-2">
                                 <div>{item.product.name} </div>
@@ -52,11 +54,21 @@ export function CartDropDown({ cart, clearCart, sendCart }: Props): ReactElement
                     )}
                 </DropdownSection>
                 <DropdownSection className="flex flex-col items-center">
-                    <DropdownItem key="clear-cart" className="text-danger" onPress={clearCart}>
-                        Clear
+                    <DropdownItem
+                        key="clear-cart"
+                        className="text-danger"
+                        onPress={clearCart}
+                        textValue="Clear"
+                    >
+                        Rensa
                     </DropdownItem>
-                    <DropdownItem key="send-cart" className="text-success" onPress={sendCart}>
-                        Send
+                    <DropdownItem
+                        key="send-cart"
+                        className="text-success"
+                        onPress={sendCart}
+                        textValue="Send"
+                    >
+                        Skicka
                     </DropdownItem>
                 </DropdownSection>
             </DropdownMenu>
