@@ -12,11 +12,15 @@ import {
 import { ReactElement } from 'react';
 import { CartItem } from '~models';
 import { ShoppingCart as CartIcon, X as CloseIcon } from 'lucide-react';
+import { useCartStore } from '~/stores';
 
 interface Props {
     cart: CartItem[];
     clearCart: () => void;
     sendCart: () => void;
+}
+function handleDeleteProduct(item: CartItem) {
+    useCartStore.getState().remove(item.product);
 }
 
 export function CartDropDown({ cart, clearCart, sendCart }: Props): ReactElement {
@@ -39,8 +43,9 @@ export function CartDropDown({ cart, clearCart, sendCart }: Props): ReactElement
                     {(item) => (
                         <DropdownItem
                             key={Math.random()}
-                            endContent={<CloseIcon className="text-large" />}
+                            endContent={<CloseIcon onClick={(e) => handleDeleteProduct(item)} className="text-large" />}
                             textValue="{item.product.name}"
+
                         >
                             <div className="flex flex-row justify-between items-center gap-x-2">
                                 <div>{item.product.name} </div>
