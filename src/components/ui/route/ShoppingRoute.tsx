@@ -9,24 +9,23 @@ const storeLogoMap: StoreLogoMap = {
     coop: '/logo/coop_logo.svg',
     ica: '/logo/ica_logo.svg',
     willys: '/logo/willys_logo.svg',
+    lidl: '/logo/lidl_logo.svg',
 };
 
-// Helper function to calculate the total cart cost (ignoring quantity)
 function calcTotalCost(route: StoreInventory[]): number {
     return route.reduce((total, storeInventory) => {
         return (
             total +
             storeInventory.inventory.reduce((storeTotal, stockItem) => {
-                return storeTotal + stockItem.price; // Ignore quantity
+                return storeTotal + stockItem.price;
             }, 0)
         );
     }, 0);
 }
 
-// Helper function to calculate the cost for a single store (ignoring quantity)
 function calcStoreCost(inventory: StockItem[]): number {
     return inventory.reduce((total, stockItem) => {
-        return total + stockItem.price; // Ignore quantity
+        return total + stockItem.price;
     }, 0);
 }
 
